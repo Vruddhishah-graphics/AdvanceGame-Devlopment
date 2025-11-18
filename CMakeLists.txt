@@ -11,7 +11,7 @@ add_definitions(-DGLM_FORCE_RADIANS)
 
 file(GLOB SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 file(GLOB HEADER_FILES "${CMAKE_SOURCE_DIR}/include/**/*.h")
-add_executable(FinalProject ${SRC_FILES} ${HEADER_FILES})
+add_executable(FinalProject ${SRC_FILES} ${HEADER_FILES} "include/game/Node.h" "include/game/Texture.h")
 
 # >>>> UPDATE these two variables if your local paths differ <<<<
 set(LIB_INCLUDE "D:/CANADA- PB - AI & ml/SEM 3/Advanced Game & Devlopement/Libraries/Libraries/include")
