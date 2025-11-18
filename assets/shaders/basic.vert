@@ -6,10 +6,15 @@ uniform mat4 uModel, uView, uProj;
 
 out vec3 vPos;
 out vec3 vNormal;
+out vec2 vTexCoord;
 
 void main(){
     vec4 wp = uModel * vec4(aPos,1.0);
     vPos = wp.xyz;
     vNormal = mat3(transpose(inverse(uModel))) * aNormal;
+    
+    // Generate texture coordinates from position
+    vTexCoord = vec2(aPos.x + 0.5, aPos.z + 0.5);
+    
     gl_Position = uProj * uView * wp;
 }

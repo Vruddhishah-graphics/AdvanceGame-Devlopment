@@ -1,39 +1,62 @@
 #version 330 core
 in vec3 vPos;
 in vec3 vNormal;
+in vec2 vTexCoord;
+
 out vec4 FragColor;
 
-struct Light { vec3 position; vec3 color; };
-
-uniform vec3 uViewPos;
+uniform sampler2D uTexture;
+uniform bool uUseTexture;
 uniform vec3 uBaseColor;
 uniform float uEmissive;
+uniform vec3 uViewPos;
+
+// Lights
+struct Light {
+    vec3 position;
+    vec3 color;
+};
+
 uniform Light uL1;
 uniform Light uL2;
 
+// Material properties
 uniform float uKa;
 uniform float uKd;
 uniform float uKs;
 uniform float uShine;
 
-void main(){
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(uViewPos - vPos);
+vec3 CalculateLight(vec3 lightPos, vec3 lightColor, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 baseColor) {
+    vec3 lightDir = normalize(lightPos - fragPos);
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
 
-    vec3 L1dir = normalize(uL1.position - vPos);
-    vec3 H1    = normalize(L1dir + V);
-    float diff1 = max(dot(N,L1dir), 0.0);
-    float spec1 = pow(max(dot(N,H1), 0.0), uShine);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), uShine);
+    vec3 specular = spec * lightColor * 0.5;
 
-    vec3 L2dir = normalize(uL2.position - vPos);
-    vec3 H2    = normalize(L2dir + V);
-    float diff2 = max(dot(N,L2dir), 0.0);
-    float spec2 = pow(max(dot(N,H2), 0.0), uShine);
+    return (diffuse * baseColor) + specular;
+}
 
-    vec3 ambient  = uKa * uBaseColor;
-    vec3 diffuse  = uKd * uBaseColor * (uL1.color * diff1 + uL2.color * diff2);
-    vec3 specular = uKs * (uL1.color * spec1 + uL2.color * spec2);
+void main() {
+    vec3 norm = normalize(vNormal);
+    vec3 viewDir = normalize(uViewPos - vPos);
 
-    vec3 emissive = uEmissive * uBaseColor;
-    FragColor = vec4(ambient + diffuse + specular + emissive, 1.0);
+    vec3 baseColor;
+    if (uUseTexture) {
+        baseColor = texture(uTexture, vTexCoord).rgb;
+    } else {
+        baseColor = uBaseColor;
+    }
+    
+    vec3 ambient = uKa * baseColor;
+    vec3 result = ambient;
+
+    result += CalculateLight(uL1.position, uL1.color, norm, vPos, viewDir, baseColor);
+    result += CalculateLight(uL2.position, uL2.color, norm, vPos, viewDir, baseColor);
+    
+    vec3 emissive = uEmissive * baseColor;
+    result += emissive;
+
+    FragColor = vec4(result, 1.0);
 }
