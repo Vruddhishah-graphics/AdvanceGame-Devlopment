@@ -3,6 +3,8 @@
 #include <vector>
 #include <cmath>
 #include <cstdlib>
+#include <string>
+#include <iostream>
 
 namespace game {
 
@@ -14,6 +16,12 @@ namespace game {
             if (id_) glDeleteTextures(1, &id_);
         }
 
+        // Load texture from file (stub - would need SOIL or stb_image)
+        bool LoadFromFile(const std::string& path) {
+            // Placeholder - returns false to trigger procedural generation
+            return false;
+        }
+
         void GenerateGrass() {
             const int size = 256;
             width_ = height_ = size;
@@ -22,10 +30,14 @@ namespace game {
             for (int y = 0; y < size; ++y) {
                 for (int x = 0; x < size; ++x) {
                     int idx = (y * size + x) * 3;
+
+                    // Use Perlin-like noise for natural grass texture
                     float noise = (std::rand() % 50) / 255.0f;
-                    data[idx + 0] = static_cast<unsigned char>(40 + noise * 255);   // R
-                    data[idx + 1] = static_cast<unsigned char>(140 + noise * 255);  // G
-                    data[idx + 2] = static_cast<unsigned char>(50 + noise * 255);   // B
+                    float stripe = std::sin(y * 0.3f) * 0.1f;
+
+                    data[idx + 0] = static_cast<unsigned char>(30 + noise * 255 + stripe * 50);   // R - darker green
+                    data[idx + 1] = static_cast<unsigned char>(120 + noise * 255);  // G - main green
+                    data[idx + 2] = static_cast<unsigned char>(40 + noise * 255);   // B
                 }
             }
 
@@ -40,8 +52,12 @@ namespace game {
             for (int y = 0; y < size; ++y) {
                 for (int x = 0; x < size; ++x) {
                     int idx = (y * size + x) * 3;
+
+                    // Add some texture variation
                     float noise = (std::rand() % 80) / 255.0f;
-                    unsigned char gray = static_cast<unsigned char>(100 + noise * 255);
+                    float pattern = std::sin(x * 0.1f) * std::cos(y * 0.1f) * 0.15f;
+
+                    unsigned char gray = static_cast<unsigned char>(100 + noise * 255 + pattern * 50);
                     data[idx + 0] = gray;
                     data[idx + 1] = gray;
                     data[idx + 2] = gray;
@@ -59,8 +75,12 @@ namespace game {
             for (int y = 0; y < size; ++y) {
                 for (int x = 0; x < size; ++x) {
                     int idx = (y * size + x) * 3;
+
+                    // Metallic brushed effect
                     float noise = (std::rand() % 30) / 255.0f;
-                    unsigned char gray = static_cast<unsigned char>(160 + noise * 255);
+                    float streak = std::sin(x * 0.5f) * 0.1f;
+
+                    unsigned char gray = static_cast<unsigned char>(160 + noise * 255 + streak * 30);
                     data[idx + 0] = gray;
                     data[idx + 1] = gray;
                     data[idx + 2] = gray;
@@ -80,10 +100,18 @@ namespace game {
                 for (int x = 0; x < size; ++x) {
                     int idx = (y * size + x) * 3;
                     bool white = ((x / (size / checks)) + (y / (size / checks))) % 2 == 0;
-                    unsigned char val = white ? 220 : 100;
-                    data[idx + 0] = val;
-                    data[idx + 1] = val - 20;
-                    data[idx + 2] = val - 40;
+
+                    // Wood-like colors instead of pure B&W
+                    if (white) {
+                        data[idx + 0] = 180 + (std::rand() % 40);  // Light wood
+                        data[idx + 1] = 140 + (std::rand() % 40);
+                        data[idx + 2] = 100 + (std::rand() % 40);
+                    }
+                    else {
+                        data[idx + 0] = 120 + (std::rand() % 30);  // Dark wood
+                        data[idx + 1] = 80 + (std::rand() % 30);
+                        data[idx + 2] = 50 + (std::rand() % 30);
+                    }
                 }
             }
 
@@ -104,11 +132,12 @@ namespace game {
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0,
                 GL_RGB, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);
 
             glBindTexture(GL_TEXTURE_2D, 0);
         }

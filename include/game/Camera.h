@@ -1,13 +1,14 @@
 ﻿#pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "game/glm_minimal.h" 
 
 namespace game {
 
     class Camera {
     public:
         Camera()
-            : pos_(0.f, 25.f, 5.f),
+            : pos_(0.f, 15.f, 20.f),  // Better starting position
             target_(0.f, 0.f, 0.f),
             up_(0.f, 1.f, 0.f),
             proj_(1.f) {

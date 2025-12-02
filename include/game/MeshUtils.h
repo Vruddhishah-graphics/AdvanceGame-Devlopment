@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 #include <string>
 
 namespace game {
@@ -19,9 +20,12 @@ namespace game {
     // OBJ loader (with procedural fallbacks)
     Mesh loadOBJ(const std::string& path);
 
-    // Procedural character models
-    Mesh createProceduralMouse();
-    Mesh createProceduralCat();
-    Mesh createProceduralCheese();
+    // Enhanced procedural character models - much more detailed
+    Mesh createDetailedMouse();
+    Mesh createDetailedCat();
+    Mesh createDetailedCheese();
+
+    // UI elements
+    Mesh createQuad();  // For UI rendering
 
 } // namespace game

@@ -1,51 +1,50 @@
 cmake_minimum_required(VERSION 3.20)
-project(FinalProject LANGUAGES CXX)
+project(FinalProject)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+# AGGRESSIVE x86 compiler settings
+if(MSVC)
+    # Maximum heap space and disable optimizations that use memory
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm500")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+    # Disable debug info to save memory
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi-")
+    # Use minimal rebuild
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Gm-")
 endif()
 
-add_definitions(-DGLM_FORCE_RADIANS)
+add_definitions(-DASSET_DIR="${CMAKE_SOURCE_DIR}/assets")
 
-file(GLOB SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
-file(GLOB HEADER_FILES "${CMAKE_SOURCE_DIR}/include/**/*.h")
-add_executable(FinalProject ${SRC_FILES} ${HEADER_FILES} "include/game/Node.h" "include/game/Texture.h")
+set(LIBRARY_DIR "D:/CANADA- PB - AI & ml/SEM 3/Advanced Game & Devlopement/Libraries/Libraries")
 
-# >>>> UPDATE these two variables if your local paths differ <<<<
-set(LIB_INCLUDE "D:/CANADA- PB - AI & ml/SEM 3/Advanced Game & Devlopement/Libraries/Libraries/include")
-set(LIB_FOLDER  "D:/CANADA- PB - AI & ml/SEM 3/Advanced Game & Devlopement/Libraries/Libraries/lib")
-
-target_include_directories(FinalProject PRIVATE
-    "${CMAKE_SOURCE_DIR}/include"
-    "${LIB_INCLUDE}"
-    "${LIB_INCLUDE}/GL"
-    "${LIB_INCLUDE}/GLFW"
-    "${LIB_INCLUDE}/glm"
-    "${LIB_INCLUDE}/SOIL"
+include_directories(
+    ${CMAKE_SOURCE_DIR}/include
+    ${LIBRARY_DIR}/include
 )
 
-find_package(OpenGL REQUIRED)
-target_link_libraries(FinalProject PRIVATE
-    ${OPENGL_gl_LIBRARY}
-    glu32.lib
-    "${LIB_FOLDER}/glew32s.lib"
-    "${LIB_FOLDER}/glfw3.lib"
-    "${LIB_FOLDER}/SOIL.lib"
+link_directories(${LIBRARY_DIR}/lib)
+
+# Source files
+add_executable(FinalProject 
+    src/main.cpp
+    src/Game.cpp
+    src/Camera.cpp
+    src/MeshUtils.cpp
+    src/ParticleSystem.cpp
+    src/LightningSystem.cpp
+    src/UIRenderer.cpp
 )
 
-target_compile_definitions(FinalProject PRIVATE
-    GLEW_STATIC
-    ASSET_DIR="${CMAKE_SOURCE_DIR}/assets"
-)
-
-if (WIN32)
-    set(CMAKE_SUPPRESS_REGENERATION TRUE)
-    set_target_properties(FinalProject PROPERTIES DEBUG_POSTFIX "_d")
+if(MSVC)
+    add_definitions(-DGLEW_STATIC -DGLM_FORCE_RADIANS -D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-message(STATUS "✅ FinalProject configured successfully!")
-message(STATUS "Include folder: ${LIB_INCLUDE}")
-message(STATUS "Lib folder: ${LIB_FOLDER}")
-message(STATUS "Assets folder: ${CMAKE_SOURCE_DIR}/assets")
+target_link_libraries(FinalProject 
+    opengl32
+    glew32s
+    glfw3
+    winmm
+)
