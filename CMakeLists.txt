@@ -1,23 +1,21 @@
-cmake_minimum_required(VERSION 3.20)
+﻿cmake_minimum_required(VERSION 3.20)
 project(FinalProject)
+add_definitions(-DASSET_DIR="${CMAKE_SOURCE_DIR}/assets")
+
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# AGGRESSIVE x86 compiler settings
-if(MSVC)
-    # Maximum heap space and disable optimizations that use memory
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm500")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-    # Disable debug info to save memory
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi-")
-    # Use minimal rebuild
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Gm-")
-endif()
+# ----- SAFEST FIX -----
+# Build always happens inside C:/_safe_build (no "&" in path)
+set(SAFE_BUILD_DIR "C:/_safe_build/FinalProject")
+file(MAKE_DIRECTORY ${SAFE_BUILD_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${SAFE_BUILD_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${SAFE_BUILD_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${SAFE_BUILD_DIR})
+# -----------------------
 
-add_definitions(-DASSET_DIR="${CMAKE_SOURCE_DIR}/assets")
-
+# Libraries path (your original)
 set(LIBRARY_DIR "D:/CANADA- PB - AI & ml/SEM 3/Advanced Game & Devlopement/Libraries/Libraries")
 
 include_directories(
@@ -36,6 +34,18 @@ add_executable(FinalProject
     src/ParticleSystem.cpp
     src/LightningSystem.cpp
     src/UIRenderer.cpp
+    include/game/PBRMaterial.h 
+    include/game/SkeletalAnimation.h 
+    include/game/ShadowMap.h 
+    include/game/PostProcess.h
+)
+
+# Copy assets to SAFE build folder
+add_custom_command(
+    TARGET FinalProject POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "${SAFE_BUILD_DIR}/assets"
 )
 
 if(MSVC)

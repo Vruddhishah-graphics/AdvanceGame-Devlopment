@@ -44,6 +44,79 @@ namespace game {
         return m;
     }
 
+    // Helper to add a solid box with proper normals
+    static void addSolidBox(std::vector<V>& verts, std::vector<unsigned int>& indices,
+        glm::vec3 center, glm::vec3 size) {
+
+        unsigned int base = (unsigned int)verts.size();
+        glm::vec3 hs = size * 0.5f; // Half size
+
+        // Define 8 corners
+        glm::vec3 corners[8] = {
+            center + glm::vec3(-hs.x, -hs.y, -hs.z), // 0
+            center + glm::vec3(hs.x, -hs.y, -hs.z), // 1
+            center + glm::vec3(hs.x,  hs.y, -hs.z), // 2
+            center + glm::vec3(-hs.x,  hs.y, -hs.z), // 3
+            center + glm::vec3(-hs.x, -hs.y,  hs.z), // 4
+            center + glm::vec3(hs.x, -hs.y,  hs.z), // 5
+            center + glm::vec3(hs.x,  hs.y,  hs.z), // 6
+            center + glm::vec3(-hs.x,  hs.y,  hs.z)  // 7
+        };
+
+        // Front face (Z+)
+        glm::vec3 n = glm::vec3(0, 0, 1);
+        verts.push_back({ corners[4].x, corners[4].y, corners[4].z, n.x, n.y, n.z });
+        verts.push_back({ corners[5].x, corners[5].y, corners[5].z, n.x, n.y, n.z });
+        verts.push_back({ corners[6].x, corners[6].y, corners[6].z, n.x, n.y, n.z });
+        verts.push_back({ corners[7].x, corners[7].y, corners[7].z, n.x, n.y, n.z });
+        indices.insert(indices.end(), { base, base + 1, base + 2, base, base + 2, base + 3 });
+        base += 4;
+
+        // Back face (Z-)
+        n = glm::vec3(0, 0, -1);
+        verts.push_back({ corners[1].x, corners[1].y, corners[1].z, n.x, n.y, n.z });
+        verts.push_back({ corners[0].x, corners[0].y, corners[0].z, n.x, n.y, n.z });
+        verts.push_back({ corners[3].x, corners[3].y, corners[3].z, n.x, n.y, n.z });
+        verts.push_back({ corners[2].x, corners[2].y, corners[2].z, n.x, n.y, n.z });
+        indices.insert(indices.end(), { base, base + 1, base + 2, base, base + 2, base + 3 });
+        base += 4;
+
+        // Top face (Y+)
+        n = glm::vec3(0, 1, 0);
+        verts.push_back({ corners[3].x, corners[3].y, corners[3].z, n.x, n.y, n.z });
+        verts.push_back({ corners[7].x, corners[7].y, corners[7].z, n.x, n.y, n.z });
+        verts.push_back({ corners[6].x, corners[6].y, corners[6].z, n.x, n.y, n.z });
+        verts.push_back({ corners[2].x, corners[2].y, corners[2].z, n.x, n.y, n.z });
+        indices.insert(indices.end(), { base, base + 1, base + 2, base, base + 2, base + 3 });
+        base += 4;
+
+        // Bottom face (Y-)
+        n = glm::vec3(0, -1, 0);
+        verts.push_back({ corners[0].x, corners[0].y, corners[0].z, n.x, n.y, n.z });
+        verts.push_back({ corners[1].x, corners[1].y, corners[1].z, n.x, n.y, n.z });
+        verts.push_back({ corners[5].x, corners[5].y, corners[5].z, n.x, n.y, n.z });
+        verts.push_back({ corners[4].x, corners[4].y, corners[4].z, n.x, n.y, n.z });
+        indices.insert(indices.end(), { base, base + 1, base + 2, base, base + 2, base + 3 });
+        base += 4;
+
+        // Right face (X+)
+        n = glm::vec3(1, 0, 0);
+        verts.push_back({ corners[1].x, corners[1].y, corners[1].z, n.x, n.y, n.z });
+        verts.push_back({ corners[2].x, corners[2].y, corners[2].z, n.x, n.y, n.z });
+        verts.push_back({ corners[6].x, corners[6].y, corners[6].z, n.x, n.y, n.z });
+        verts.push_back({ corners[5].x, corners[5].y, corners[5].z, n.x, n.y, n.z });
+        indices.insert(indices.end(), { base, base + 1, base + 2, base, base + 2, base + 3 });
+        base += 4;
+
+        // Left face (X-)
+        n = glm::vec3(-1, 0, 0);
+        verts.push_back({ corners[0].x, corners[0].y, corners[0].z, n.x, n.y, n.z });
+        verts.push_back({ corners[4].x, corners[4].y, corners[4].z, n.x, n.y, n.z });
+        verts.push_back({ corners[7].x, corners[7].y, corners[7].z, n.x, n.y, n.z });
+        verts.push_back({ corners[3].x, corners[3].y, corners[3].z, n.x, n.y, n.z });
+        indices.insert(indices.end(), { base, base + 1, base + 2, base, base + 2, base + 3 });
+    }
+
     static void addSphere(std::vector<V>& verts, std::vector<unsigned int>& indices,
         glm::vec3 center, float radius, int segments = 16, int rings = 12) {
 
@@ -108,7 +181,6 @@ namespace game {
         }
     }
 
-    // Helper to add cone - DECLARED BEFORE USE
     static void addCone(std::vector<V>& verts, std::vector<unsigned int>& indices,
         glm::vec3 center, float radius, float height, int segments) {
 
@@ -198,7 +270,7 @@ namespace game {
         // Snout (cat muzzle)
         addEllipsoid(verts, indices, { 0.72f, 0.2f, 0.0f }, { 0.15f, 0.12f, 0.15f }, 12, 10);
 
-        // Pointed ears (triangular-ish) - NOW addCone is declared
+        // Pointed ears (triangular-ish)
         addCone(verts, indices, { 0.45f, 0.65f, -0.18f }, 0.15f, 0.25f, 12);
         addCone(verts, indices, { 0.45f, 0.65f, 0.18f }, 0.15f, 0.25f, 12);
 
@@ -308,7 +380,67 @@ namespace game {
         return createMeshFromData(verts, indices);
     }
 
+    // Create realistic furniture models
+    Mesh createTable() {
+        std::vector<V> verts;
+        std::vector<unsigned int> indices;
+
+        // Table top (solid box)
+        addSolidBox(verts, indices, { 0, 0.9f, 0 }, { 2.0f, 0.1f, 1.2f });
+
+        // Four legs
+        addSolidBox(verts, indices, { -0.9f, 0.4f, -0.5f }, { 0.12f, 0.9f, 0.12f });
+        addSolidBox(verts, indices, { 0.9f, 0.4f, -0.5f }, { 0.12f, 0.9f, 0.12f });
+        addSolidBox(verts, indices, { -0.9f, 0.4f,  0.5f }, { 0.12f, 0.9f, 0.12f });
+        addSolidBox(verts, indices, { 0.9f, 0.4f,  0.5f }, { 0.12f, 0.9f, 0.12f });
+
+        return createMeshFromData(verts, indices);
+    }
+
+    Mesh createChair() {
+        std::vector<V> verts;
+        std::vector<unsigned int> indices;
+
+        // Seat
+        addSolidBox(verts, indices, { 0, 0.5f, 0 }, { 0.8f, 0.08f, 0.8f });
+
+        // Backrest
+        addSolidBox(verts, indices, { 0, 0.9f, -0.35f }, { 0.8f, 0.7f, 0.08f });
+
+        // Four legs
+        addSolidBox(verts, indices, { -0.35f, 0.25f, -0.35f }, { 0.08f, 0.5f, 0.08f });
+        addSolidBox(verts, indices, { 0.35f, 0.25f, -0.35f }, { 0.08f, 0.5f, 0.08f });
+        addSolidBox(verts, indices, { -0.35f, 0.25f,  0.35f }, { 0.08f, 0.5f, 0.08f });
+        addSolidBox(verts, indices, { 0.35f, 0.25f,  0.35f }, { 0.08f, 0.5f, 0.08f });
+
+        return createMeshFromData(verts, indices);
+    }
+
+    Mesh createSofa() {
+        std::vector<V> verts;
+        std::vector<unsigned int> indices;
+
+        // Main seat
+        addSolidBox(verts, indices, { 0, 0.4f, 0 }, { 2.5f, 0.5f, 1.0f });
+
+        // Backrest
+        addSolidBox(verts, indices, { 0, 0.8f, -0.45f }, { 2.5f, 0.8f, 0.2f });
+
+        // Left armrest
+        addSolidBox(verts, indices, { -1.2f, 0.6f, 0 }, { 0.2f, 0.6f, 1.0f });
+
+        // Right armrest
+        addSolidBox(verts, indices, { 1.2f, 0.6f, 0 }, { 0.2f, 0.6f, 1.0f });
+
+        // Cushions (decorative)
+        addSphere(verts, indices, { -0.6f, 0.7f, 0 }, 0.15f, 12, 10);
+        addSphere(verts, indices, { 0.6f, 0.7f, 0 }, 0.15f, 12, 10);
+
+        return createMeshFromData(verts, indices);
+    }
+
     // Create quad for UI
+  // Create quad for UI
     Mesh createQuad() {
         std::vector<V> verts = {
             { -0.5f, -0.5f, 0.0f,  0, 0, 1 },
@@ -321,191 +453,190 @@ namespace game {
 
         return createMeshFromData(verts, indices);
     }
+// Basic primitives
+Mesh makeBox() {
+    std::vector<V> v;
+    std::vector<unsigned int> i;
 
-    // Basic primitives
-    Mesh makeBox() {
-        std::vector<V> v;
-        std::vector<unsigned int> i;
+    auto face = [&](float ax, float ay, float az, float bx, float by, float bz,
+        float cx, float cy, float cz, float dx, float dy, float dz,
+        float nx, float ny, float nz) {
+            unsigned int base = (unsigned int)v.size();
+            v.push_back({ ax, ay, az, nx, ny, nz });
+            v.push_back({ bx, by, bz, nx, ny, nz });
+            v.push_back({ cx, cy, cz, nx, ny, nz });
+            v.push_back({ dx, dy, dz, nx, ny, nz });
+            i.insert(i.end(), { base, base + 1, base + 2, base + 2, base + 3, base });
+        };
 
-        auto face = [&](float ax, float ay, float az, float bx, float by, float bz,
-            float cx, float cy, float cz, float dx, float dy, float dz,
-            float nx, float ny, float nz) {
-                unsigned int base = (unsigned int)v.size();
-                v.push_back({ ax, ay, az, nx, ny, nz });
-                v.push_back({ bx, by, bz, nx, ny, nz });
-                v.push_back({ cx, cy, cz, nx, ny, nz });
-                v.push_back({ dx, dy, dz, nx, ny, nz });
-                i.insert(i.end(), { base, base + 1, base + 2, base + 2, base + 3, base });
-            };
+    float s = 0.5f;
+    face(s, -s, -s, s, s, -s, s, s, s, s, -s, s, 1, 0, 0);
+    face(-s, -s, s, -s, s, s, -s, s, -s, -s, -s, -s, -1, 0, 0);
+    face(-s, s, -s, s, s, -s, s, s, s, -s, s, s, 0, 1, 0);
+    face(-s, -s, s, s, -s, s, s, -s, -s, -s, -s, -s, 0, -1, 0);
+    face(-s, -s, s, -s, s, s, s, s, s, s, -s, s, 0, 0, 1);
+    face(s, -s, -s, s, s, -s, -s, s, -s, -s, -s, -s, 0, 0, -1);
 
-        float s = 0.5f;
-        face(s, -s, -s, s, s, -s, s, s, s, s, -s, s, 1, 0, 0);
-        face(-s, -s, s, -s, s, s, -s, s, -s, -s, -s, -s, -1, 0, 0);
-        face(-s, s, -s, s, s, -s, s, s, s, -s, s, s, 0, 1, 0);
-        face(-s, -s, s, s, -s, s, s, -s, -s, -s, -s, -s, 0, -1, 0);
-        face(-s, -s, s, -s, s, s, s, s, s, s, -s, s, 0, 0, 1);
-        face(s, -s, -s, s, s, -s, -s, s, -s, -s, -s, -s, 0, 0, -1);
+    return createMeshFromData(v, i);
+}
 
-        return createMeshFromData(v, i);
+Mesh makeSphere(int seg, int rings) {
+    std::vector<V> v;
+    std::vector<unsigned int> i;
+
+    for (int y = 0; y <= rings; ++y) {
+        for (int x = 0; x <= seg; ++x) {
+            float u = (float)x / (float)seg;
+            float vv = (float)y / (float)rings;
+            float th = u * 2.0f * (float)M_PI;
+            float ph = vv * (float)M_PI;
+            float sx = std::sin(ph) * std::cos(th);
+            float sy = std::cos(ph);
+            float sz = std::sin(ph) * std::sin(th);
+            v.push_back({ sx, sy, sz, sx, sy, sz });
+        }
     }
 
-    Mesh makeSphere(int seg, int rings) {
-        std::vector<V> v;
-        std::vector<unsigned int> i;
-
-        for (int y = 0; y <= rings; ++y) {
-            for (int x = 0; x <= seg; ++x) {
-                float u = (float)x / (float)seg;
-                float vv = (float)y / (float)rings;
-                float th = u * 2.0f * (float)M_PI;
-                float ph = vv * (float)M_PI;
-                float sx = std::sin(ph) * std::cos(th);
-                float sy = std::cos(ph);
-                float sz = std::sin(ph) * std::sin(th);
-                v.push_back({ sx, sy, sz, sx, sy, sz });
-            }
+    for (int y = 0; y < rings; ++y) {
+        for (int x = 0; x < seg; ++x) {
+            unsigned int a = y * (seg + 1) + x;
+            unsigned int b = (y + 1) * (seg + 1) + x;
+            i.insert(i.end(), { a, b, a + 1, b, b + 1, a + 1 });
         }
-
-        for (int y = 0; y < rings; ++y) {
-            for (int x = 0; x < seg; ++x) {
-                unsigned int a = y * (seg + 1) + x;
-                unsigned int b = (y + 1) * (seg + 1) + x;
-                i.insert(i.end(), { a, b, a + 1, b, b + 1, a + 1 });
-            }
-        }
-
-        return createMeshFromData(v, i);
     }
 
-    Mesh makeCylinder(int seg) {
-        std::vector<V> v;
-        std::vector<unsigned int> i;
+    return createMeshFromData(v, i);
+}
 
-        for (int k = 0; k <= 1; ++k) {
-            float y = (float)k;
-            for (int s = 0; s <= seg; ++s) {
-                float a = s * 2.0f * (float)M_PI / seg;
-                float x = std::cos(a), z = std::sin(a);
-                v.push_back({ x, y, z, x, 0, z });
-            }
-        }
+Mesh makeCylinder(int seg) {
+    std::vector<V> v;
+    std::vector<unsigned int> i;
 
-        for (int s = 0; s < seg; ++s) {
-            unsigned int a = s, b = s + seg + 1, c = s + 1, d = s + seg + 2;
-            i.insert(i.end(), { a, b, c, c, b, d });
-        }
-
-        return createMeshFromData(v, i);
-    }
-
-    Mesh makeCone(int seg) {
-        std::vector<V> v;
-        std::vector<unsigned int> i;
-
-        v.push_back({ 0.f, 1.f, 0.f, 0.f, 1.f, 0.f });
-
+    for (int k = 0; k <= 1; ++k) {
+        float y = (float)k;
         for (int s = 0; s <= seg; ++s) {
             float a = s * 2.0f * (float)M_PI / seg;
             float x = std::cos(a), z = std::sin(a);
-            float nx = x, nz = z, ny = 0.4f;
-            float inv = 1.0f / std::sqrt(nx * nx + ny * ny + nz * nz);
-            nx *= inv; ny *= inv; nz *= inv;
-            v.push_back({ x, 0.f, z, nx, ny, nz });
+            v.push_back({ x, y, z, x, 0, z });
         }
-
-        for (int s = 1; s <= seg; ++s)
-            i.insert(i.end(), { 0u, (unsigned int)s, (unsigned int)(s + 1) });
-
-        return createMeshFromData(v, i);
     }
 
-    void drawMesh(const Mesh& m) {
-        glBindVertexArray(m.vao);
-        glDrawElements(GL_TRIANGLES, m.indexCount, GL_UNSIGNED_INT, (void*)0);
-        glBindVertexArray(0);
+    for (int s = 0; s < seg; ++s) {
+        unsigned int a = s, b = s + seg + 1, c = s + 1, d = s + seg + 2;
+        i.insert(i.end(), { a, b, c, c, b, d });
     }
 
-    // OBJ loader with fallback
-    Mesh loadOBJ(const std::string& path) {
-        std::ifstream file(path);
+    return createMeshFromData(v, i);
+}
 
-        if (!file) {
-            std::cout << "  OBJ not found: " << path << "\n";
+Mesh makeCone(int seg) {
+    std::vector<V> v;
+    std::vector<unsigned int> i;
 
-            if (path.find("mouse") != std::string::npos) {
-                return createDetailedMouse();
-            }
-            else if (path.find("cat") != std::string::npos) {
-                return createDetailedCat();
-            }
-            else if (path.find("cheese") != std::string::npos) {
-                return createDetailedCheese();
-            }
-            else {
-                return makeSphere();
-            }
+    v.push_back({ 0.f, 1.f, 0.f, 0.f, 1.f, 0.f });
+
+    for (int s = 0; s <= seg; ++s) {
+        float a = s * 2.0f * (float)M_PI / seg;
+        float x = std::cos(a), z = std::sin(a);
+        float nx = x, nz = z, ny = 0.4f;
+        float inv = 1.0f / std::sqrt(nx * nx + ny * ny + nz * nz);
+        nx *= inv; ny *= inv; nz *= inv;
+        v.push_back({ x, 0.f, z, nx, ny, nz });
+    }
+
+    for (int s = 1; s <= seg; ++s)
+        i.insert(i.end(), { 0u, (unsigned int)s, (unsigned int)(s + 1) });
+
+    return createMeshFromData(v, i);
+}
+
+void drawMesh(const Mesh& m) {
+    glBindVertexArray(m.vao);
+    glDrawElements(GL_TRIANGLES, m.indexCount, GL_UNSIGNED_INT, (void*)0);
+    glBindVertexArray(0);
+}
+
+// OBJ loader with fallback
+Mesh loadOBJ(const std::string& path) {
+    std::ifstream file(path);
+
+    if (!file) {
+        std::cout << "  OBJ not found: " << path << "\n";
+
+        if (path.find("mouse") != std::string::npos) {
+            return createDetailedMouse();
         }
+        else if (path.find("cat") != std::string::npos) {
+            return createDetailedCat();
+        }
+        else if (path.find("cheese") != std::string::npos) {
+            return createDetailedCheese();
+        }
+        else {
+            return makeSphere();
+        }
+    }
 
-        // Standard OBJ loading...
-        std::vector<glm::vec3> positions;
-        std::vector<unsigned int> indices;
+    // Standard OBJ loading...
+    std::vector<glm::vec3> positions;
+    std::vector<unsigned int> indices;
 
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.empty() || line[0] == '#') continue;
-            std::istringstream iss(line);
-            char c;
-            if (line[0] == 'v' && (line[1] == ' ' || line[1] == '\t')) {
-                iss >> c;
-                float x, y, z;
-                iss >> x >> y >> z;
-                positions.emplace_back(x, y, z);
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue;
+        std::istringstream iss(line);
+        char c;
+        if (line[0] == 'v' && (line[1] == ' ' || line[1] == '\t')) {
+            iss >> c;
+            float x, y, z;
+            iss >> x >> y >> z;
+            positions.emplace_back(x, y, z);
+        }
+        else if (line[0] == 'f' && (line[1] == ' ' || line[1] == '\t')) {
+            iss >> c;
+            std::string token;
+            std::vector<unsigned int> face;
+            while (iss >> token) {
+                size_t slash = token.find('/');
+                unsigned int vIndex = 0;
+                if (slash == std::string::npos)
+                    vIndex = static_cast<unsigned int>(std::stoul(token));
+                else
+                    vIndex = static_cast<unsigned int>(std::stoul(token.substr(0, slash)));
+                if (vIndex == 0) continue;
+                face.push_back(vIndex - 1);
             }
-            else if (line[0] == 'f' && (line[1] == ' ' || line[1] == '\t')) {
-                iss >> c;
-                std::string token;
-                std::vector<unsigned int> face;
-                while (iss >> token) {
-                    size_t slash = token.find('/');
-                    unsigned int vIndex = 0;
-                    if (slash == std::string::npos)
-                        vIndex = static_cast<unsigned int>(std::stoul(token));
-                    else
-                        vIndex = static_cast<unsigned int>(std::stoul(token.substr(0, slash)));
-                    if (vIndex == 0) continue;
-                    face.push_back(vIndex - 1);
+            if (face.size() >= 3) {
+                for (size_t i = 1; i + 1 < face.size(); ++i) {
+                    indices.push_back(face[0]);
+                    indices.push_back(face[i]);
+                    indices.push_back(face[i + 1]);
                 }
-                if (face.size() >= 3) {
-                    for (size_t i = 1; i + 1 < face.size(); ++i) {
-                        indices.push_back(face[0]);
-                        indices.push_back(face[i]);
-                        indices.push_back(face[i + 1]);
-                    }
-                }
             }
         }
-
-        if (positions.empty()) return makeSphere();
-
-        std::vector<glm::vec3> normals(positions.size(), glm::vec3(0));
-        for (size_t i = 0; i + 2 < indices.size(); i += 3) {
-            glm::vec3 n = glm::normalize(glm::cross(
-                positions[indices[i + 1]] - positions[indices[i]],
-                positions[indices[i + 2]] - positions[indices[i]]
-            ));
-            normals[indices[i]] += n;
-            normals[indices[i + 1]] += n;
-            normals[indices[i + 2]] += n;
-        }
-
-        std::vector<V> verts;
-        for (size_t i = 0; i < positions.size(); ++i) {
-            glm::vec3 n = glm::length(normals[i]) > 1e-6f ?
-                glm::normalize(normals[i]) : glm::vec3(0, 1, 0);
-            verts.push_back({ positions[i].x, positions[i].y, positions[i].z, n.x, n.y, n.z });
-        }
-
-        return createMeshFromData(verts, indices);
     }
 
-} // namespace game
+    if (positions.empty()) return makeSphere();
+
+    std::vector<glm::vec3> normals(positions.size(), glm::vec3(0));
+    for (size_t i = 0; i + 2 < indices.size(); i += 3) {
+        glm::vec3 n = glm::normalize(glm::cross(
+            positions[indices[i + 1]] - positions[indices[i]],
+            positions[indices[i + 2]] - positions[indices[i]]
+        ));
+        normals[indices[i]] += n;
+        normals[indices[i + 1]] += n;
+        normals[indices[i + 2]] += n;
+    }
+
+    std::vector<V> verts;
+    for (size_t i = 0; i < positions.size(); ++i) {
+        glm::vec3 n = glm::length(normals[i]) > 1e-6f ?
+            glm::normalize(normals[i]) : glm::vec3(0, 1, 0);
+        verts.push_back({ positions[i].x, positions[i].y, positions[i].z, n.x, n.y, n.z });
+    }
+
+    return createMeshFromData(verts, indices);
+}
+
+} // namespace game</parameter>
